@@ -12,14 +12,14 @@ public class ArrayReflection {
 
       /* http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5047859 */
       try {
-    	  System.out.println(arr.getClass().getField("length"));
+    	  arr.getClass().getField("length");
       } catch (Exception e) {
     	  e.printStackTrace();
       }
 
       /* http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4987375 */
       try {
-    	  System.out.println(arr.getClass().getMethod("clone"));
+    	  arr.getClass().getMethod("clone");
       } catch (Exception e) {
           e.printStackTrace();
       }
