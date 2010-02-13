@@ -29,14 +29,14 @@ public class swarm {
 			int T = in.nextInt();
 			int Z = in.nextInt();
 			for (int t = 0; t < T; t++) {
-				Arrays.fill(pred[t], NONE);
 				int s = in.nextInt();
 				int m = in.nextInt();
 				W[t] = s * 3;
+				Arrays.fill(pred[t], NONE);
 				for (int w = Z; w - W[t] >= 0; w--) {
-					int v2 = maxV[w - W[t]] + m;
-					if (v2 > maxV[w]) {
-						maxV[w] = v2;
+					int vt = maxV[w - W[t]] + m;
+					if (vt > maxV[w]) {
+						maxV[w] = vt;
 						pred[t][w] = t;
 					}
 				}
