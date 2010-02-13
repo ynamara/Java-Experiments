@@ -28,9 +28,9 @@ public class liarliar {
 		static void oppose(Node n1, Node n2) {
 			if (n1.opp != n2) {
 				n1.size += n2.opp.size;
-	            n2.size += n1.opp.size;
-	            n1.opp = n1.opp.rep = n2;
-	            n2.opp = n2.opp.rep = n1;
+				n2.size += n1.opp.size;
+				n1.opp = n1.opp.rep = n2;
+				n2.opp = n2.opp.rep = n1;
 			}
 		}
 	}
