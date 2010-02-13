@@ -18,7 +18,9 @@ public class swarm {
 			return "";
 		} else {
 			int t = pred[r][c];
-			return (t == NONE) ? trace(r - 1, c) : trace(r - 1, c - W[t]) + (" " + t + " " + W[t]);
+			return (t == NONE) ?
+				trace(r - 1, c) :
+				trace(r - 1, c - W[t]) + " " + t + " " + W[t];
 		}
 	}
 	
