@@ -40,7 +40,7 @@ public class Exceptions {
 		return new NoSuchElementException(msg);
 	}
 
-	/* Pops out any StackTraceElement referring to this class
+	/* Pops out any StackTraceElement originating from this class
 	 * from the top of the stack trace of an exception */
 	public static <X extends Throwable> X filteredStackTrace(X exc) {
 		StackTraceElement[] stack = exc.getStackTrace();
