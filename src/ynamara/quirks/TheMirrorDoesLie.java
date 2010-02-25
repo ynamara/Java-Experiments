@@ -1,4 +1,4 @@
-/* http://ynamara.blogspot.com/2010/02/beware-when-reflecting-on-java-arrays.html */
+/* http://www.polygenelubricants.com/2010/02/beware-when-reflecting-on-java-arrays.html */
 
 package ynamara.quirks;
 

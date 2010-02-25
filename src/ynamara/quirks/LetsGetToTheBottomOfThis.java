@@ -1,3 +1,5 @@
+/* http://www.polygenelubricants.com/2010/02/concerning-deep.html */
+
 package ynamara.quirks;
 
 import java.util.Arrays;
