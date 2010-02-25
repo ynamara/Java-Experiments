@@ -4,7 +4,7 @@ package ynamara.quirks;
 
 import java.util.Arrays;
 
-public class ArrayReflection {
+public class TheMirrorDoesLie {
    public static void main(String args[]) {
       int[] arr = { 1, 2, 3, };
       System.out.println(arr.length);

@@ -2,12 +2,14 @@ package ynamara.quirks;
 
 import java.util.Arrays;
 
-public class MeSoDeep {
+public class LetsGetToTheBottomOfThis {
+	
 	public static Object[] selfContainingArray() {
 		Object[] arr = new Object[1];
 		arr[0] = arr;
 		return arr;
 	}
+	
 	public static void main(String[] args) {
 		try {
 			System.out.println(
@@ -18,6 +20,7 @@ public class MeSoDeep {
 		} catch (StackOverflowError e) {
 			System.out.println(e);
 		} // prints "[[...]]"
+
 		try {
 			System.out.println(
 				Arrays.deepHashCode(
@@ -27,6 +30,7 @@ public class MeSoDeep {
 		} catch (StackOverflowError e) {
 			System.out.println(e);
 		} // stack overflows
+
 		try {
 			System.out.println(
 				Arrays.deepEquals(
@@ -38,4 +42,5 @@ public class MeSoDeep {
 			System.out.println(e);
 		} // stack overflows
 	}
+	
 }
