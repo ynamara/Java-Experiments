@@ -1,10 +1,9 @@
 package ynamara.fbpuzzle;
-
 import java.io.*;
 import java.util.*;
 
 public class facebull {
-	
+	/*
 	static class Logger {
 		int level = 0;	
 		String spacer(int length) {
@@ -25,34 +24,33 @@ public class facebull {
 		}
 	};
 	Logger logger = new Logger();
-
+	*/	
 	static class Index {
 		Map<String, Integer> map;
-		List<String> arr;
+		List<String> list;
 		
 		Index() {
 			map = new HashMap<String, Integer>();
-			arr = new ArrayList<String>();
+			list = new ArrayList<String>();
 		}
 		int indexOf(String s) {
-			Integer i = map.get(s);
-			if (i == null) {
-				map.put(s, i = new Integer(map.size()));
-				arr.add(s);
+			Integer ii = map.get(s);
+			if (ii == null) {
+				map.put(s, ii = map.size());
+				list.add(s);
 			}
-			return i.intValue();
+			return ii;
 		}
 		String at(int i) {
-			return arr.get(i);
+			return list.get(i);
 		}
 	}
-	Index cIdx = new Index();
+	Index compoundsIndex = new Index();
 	
 	static class Machine {
 		int label;
 		int c1, c2;
 		int w;
-		int index;
 
 		Machine(int label, int c1, int c2, int w) {
 			this.label = label;
@@ -66,70 +64,43 @@ public class facebull {
 	}
 	List<Machine> machinesList = new ArrayList<Machine>();
 	
-	class BitSetMachineIterator implements Iterator<Machine> {
-		int i = -1;
-		BitSet set;
-		
-		BitSetMachineIterator(BitSet set) {
-			this.set = set;
-		}
-		public boolean hasNext() {
-			return (i < set.length() - 1);
-		}
-		public Machine next() {
-			return machinesList.get(i = set.nextSetBit(i + 1));
-		}
-		public final void remove() {
-		}
-	}
-	
-	static Integer[] iter(BitSet set) {
+	static Integer[] asArray(BitSet set) {
 		Integer[] ret = new Integer[set.cardinality()];
 		for (int i = 0, v = set.nextSetBit(0); v >= 0; v = set.nextSetBit(v + 1)) {
 			ret[i++] = v;
 		}
 		return ret;
 	}
-	
-	class IterableBitSet extends BitSet implements Iterable<Machine> {
-		public Iterator<Machine> iterator() {
-			return new BitSetMachineIterator(this);
+
+	String toStringMachines(BitSet set) {
+		BitSet labels = new BitSet();
+		for (int i : asArray(set)) {
+			labels.set(machinesList.get(i).label);
 		}
+		return labels.toString().replaceAll("[^0-9 ]", "");		
 	}
-		
-	String toString(IterableBitSet machines) {
-		TreeSet<Integer> sorted = new TreeSet<Integer>();
-		for (Machine m: machines) {
-			sorted.add(m.label);
+
+	String toStringCompounds(BitSet compounds) {
+		String s = "";
+		for (int i: asArray(compounds)) {
+			s += " " + compoundsIndex.at(i);
 		}
-		String labels = "";
-		for (int i: sorted) {
-			labels += " " + i;
-		}
-		return labels.trim();
+		return s.trim();
 	}
 	
-	int V;
-	
-	int totalCost(IterableBitSet machines) {
-		int t = 0;
-		for (Machine m: machines) {
-			t += m.w;
-		}
-		return t;
-	}
+	int NUM_C;
 	
 	int record = Integer.MAX_VALUE;
-	IterableBitSet bestSet = null;
+	BitSet bestSet = null;
 	
-	IterableBitSet[] outgoing;
+	BitSet[] outgoing;
 	
 	Comparator<Integer> outdegreeComparator = new Comparator<Integer>() {
-		public int compare(Integer v1, Integer v2) {
-			if (outgoing[v1].cardinality() == 0) {
+		public int compare(Integer c1, Integer c2) {
+			if (outgoing[c1].cardinality() == 0) {
 				return +1;
 			}
-			return outgoing[v1].cardinality() - outgoing[v2].cardinality();
+			return outgoing[c1].cardinality() - outgoing[c2].cardinality();
 		}
 	};
 
@@ -139,25 +110,19 @@ public class facebull {
 		}
 	};
 	
-	Integer[] sortedByOutdegree(BitSet vertices) {
-		Integer[] o = iter(vertices);
-		Arrays.sort(o, outdegreeComparator);
+	static Integer[] sortedBy(BitSet set, Comparator<Integer> comparator) {
+		Integer[] o = asArray(set);
+		Arrays.sort(o, comparator);
 		return o;
 	}
 	
-	Integer[] sortedByWeight(BitSet machines) {
-		Integer[] o = iter(machines);
-		Arrays.sort(o, weightComparator);
-		return o;
-	}
-	
-	void bruteDFS(int current, BitSet loopable, BitSet reachable, IterableBitSet machines, int totalCost, BitSet path) {
+	void bruteDFS(int current, BitSet loopable, BitSet reachable, BitSet machines, int totalCost, BitSet path) {
 		if (totalCost > record) {
 			return;
 		}
-		Integer[] orderedMachines = sortedByWeight(outgoing[current]);
-		//logger.log("At " + cIdx.at(current) + ", dfs-ing!");
-		//logger.log("Candidates are " + toString(outgoing[current]));
+		Integer[] orderedMachines = sortedBy(outgoing[current], weightComparator);
+		//logger.log("At " + compoundsIndex.at(current) + ", dfs-ing!");
+		//logger.log("Candidates are " + toStringMachines(outgoing[current]));
 		for (int mIndex: orderedMachines) {
 			if (machines.get(mIndex)) {
 				//logger.log("Already using M" + machinesList.get(mIndex).label);
@@ -165,16 +130,15 @@ public class facebull {
 			}
 			Machine m = machinesList.get(mIndex);
 			int next = m.c2;
-			//logger.log("Trying M" + m.label + " " + toStringVertices(reachable));
+			//logger.log("Trying M" + m.label + " " + toStringCompounds(reachable));
 			if (loopable.get(next)) {
-				//logger.log("Finishing loop to " + cIdx.at(next));
-				//logger.log("Path is " + toStringVertices(path));
-				//logger.log("Reachable is " + toStringVertices(reachable));
-				// finishing a loop
+				//logger.log("Finishing loop to " + compoundsIndex.at(next));
+				//logger.log("Path is " + toStringCompounds(path));
+				//logger.log("Reachable is " + toStringCompounds(reachable));
 				BitSet pathNew = (BitSet) path.clone();
 				pathNew.andNot(loopable);
 				pathNew.set(next);
-				//logger.log("Finishing loop to " + cIdx.at(next) + " " + pathNew.cardinality());
+				//logger.log("Finishing loop to " + compoundsIndex.at(next) + " " + pathNew.cardinality());
 				if (pathNew.cardinality() > 0) {
 					boolean newReachable = !reachable.get(next);
 					if (newReachable) {
@@ -208,40 +172,32 @@ public class facebull {
 				}
 			}
 		}
-		//logger.log("At " + cIdx.at(current) + ", dfs-ing! DONE!");
+		//logger.log("At " + compoundsIndex.at(current) + ", dfs-ing! DONE!");
 	}
-	
-	String toStringVertices(BitSet v) {
-		String s = "";
-		for (int i: iter(v)) {
-			s += " " + cIdx.at(i);
-		}
-		return s.trim();
-	}
-			
-	void bruteAddCycle(BitSet loopable, BitSet reachable, IterableBitSet machines, int totalCost) {
-		if (reachable.cardinality() == V) {
+				
+	void bruteAddCycle(BitSet loopable, BitSet reachable, BitSet machines, int totalCost) {
+		if (reachable.cardinality() == NUM_C) {
 			//logger.log("COMPLETE!");
 			if (totalCost < record) {
 				record = totalCost;
-				bestSet = (IterableBitSet) machines.clone();
+				bestSet = (BitSet) machines.clone();
 			}
 			return;
 		}
 		//logger.in(null);
 		//logger.log("bruteAddCycle IN");
-		//logger.log(toStringVertices(reachable) + " reachable by " + toString(machines));
-		//logger.log(toStringVertices(loopable) + " are candidate starts");
-		Integer[] cycleStart = sortedByOutdegree(loopable);
-		Queue<IterableBitSet> copy = new LinkedList<IterableBitSet>();
+		//logger.log(toStringCompounds(reachable) + " reachable by " + toStringMachines(machines));
+		//logger.log(toStringCompounds(loopable) + " are candidate starts");
+		Integer[] cycleStart = sortedBy(loopable, outdegreeComparator);
+		Queue<BitSet> copy = new LinkedList<BitSet>();
 		for (int start: cycleStart) {
-			//logger.log("Trying to start cycle at " + cIdx.at(start));
+			//logger.log("Trying to start cycle at " + compoundsIndex.at(start));
 			//logger.in(null);
 			bruteDFS(start, loopable, reachable, machines, totalCost, new BitSet());
 			//logger.out();
-			copy.add((IterableBitSet) outgoing[start].clone());
+			copy.add((BitSet) outgoing[start].clone());
 			outgoing[start].clear();
-			//logger.log("Trying to start cycle at " + cIdx.at(start) + " ends");
+			//logger.log("Trying to start cycle at " + compoundsIndex.at(start) + " ends");
 		}
 		for (int start: cycleStart) {
 			outgoing[start].or(copy.remove());
@@ -253,40 +209,38 @@ public class facebull {
 	void solve(Scanner in) {
 		while (in.hasNext()) {
 			int label = Integer.parseInt(in.next().substring(1));
-			int c1 = cIdx.indexOf(in.next());
-			int c2 = cIdx.indexOf(in.next());
+			int c1 = compoundsIndex.indexOf(in.next());
+			int c2 = compoundsIndex.indexOf(in.next());
 			int w = in.nextInt();
 			machinesList.add(new Machine(label, c1, c2, w));
 		}
-		V = cIdx.map.size();
-		IterableBitSet machines = new IterableBitSet();
-		for (int i = 0; i < machinesList.size(); i++) {
-			machinesList.get(i).index = i;
-			machines.set(i);
-		}
-				
-		outgoing = new IterableBitSet[V];
-		for (Machine m: machines) {
-			IterableBitSet out = outgoing[m.c1];
+		NUM_C = compoundsIndex.map.size();
+		BitSet machines = new BitSet();
+		machines.set(0, machinesList.size());
+
+		outgoing = new BitSet[NUM_C];
+		for (Machine m: machinesList) {
+			BitSet out = outgoing[m.c1];
 			if (out == null) {
-				outgoing[m.c1] = out = new IterableBitSet();
+				outgoing[m.c1] = out = new BitSet();
 			}
-			out.set(m.index);
+			out.set(machinesList.indexOf(m));
 		}
 
-		BitSet vertices = new BitSet();
-		vertices.set(0, V);
+		BitSet compounds = new BitSet();
+		compounds.set(0, NUM_C);
+
+		int startingCompound = sortedBy(compounds, outdegreeComparator)[0];
+
+		compounds.clear();
+		compounds.set(startingCompound);
 		
-		int startingVertex = sortedByOutdegree(vertices)[0];
-		vertices.clear();
-		vertices.set(startingVertex);
-		
-		//logger.log("Starting at " + cIdx.at(startingVertex));
+		//logger.log("Starting at " + compoundsIndex.at(startingCompound));
 				
-		bruteAddCycle(vertices, new BitSet(), new IterableBitSet(), 0);
+		bruteAddCycle(compounds, new BitSet(), new BitSet(), 0);
 		
 		System.out.println(record);
-		System.out.println(toString(bestSet));
+		System.out.println(toStringMachines(bestSet));
 	}
 
 	public static void main(String[] args) throws Exception {
